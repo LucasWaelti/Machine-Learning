@@ -2,6 +2,8 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
+from TrainingDataGenerator import *
+
 class Neuron:
 	def __init__(self,func='tanh',num_weights=0):
 		self.lamda = 1
@@ -84,7 +86,7 @@ class Neuron:
 		# inputs is a list containing the output of each neuron from previous layer
 		net = 0
 		if(self.num_weights == 1):
-			net += self.weights[0]*inputs
+			net += self.weights[0]*inputs[0]
 		else:
 			for i in range(0,self.num_weights):
 				net += self.weights[i]*inputs[i]
@@ -93,7 +95,7 @@ class Neuron:
 
 
 
-class FCCN: # fullyConnectedConvolutionnalNetwork
+class FCCN: # fullyConnectedConvolutionnalNeuralNetwork
 	def __init__( self,net_info={'InputDim':1,'HL':2,'in':[1,'tanh'],1:[5,'tanh'],2:[3,'tanh'],'out':[1,'linear']} ):
 		# InputDim defines the number of weights the neurons of the input layer have. 
 		# HL : Hidden Layer -> there are accessible trough their respective number 1 to n hidden layers
@@ -102,9 +104,9 @@ class FCCN: # fullyConnectedConvolutionnalNetwork
 		if(self.net_info['out'][0]): # If there is an output layer
 			self.layers_index += 1
 		self.neurons = [[]]
-		self.eta = 0.01
-		self.errorThreshold = 0.1
-		self.allowedIter = 10000
+		self.eta = 0.001
+		self.errorThreshold = 0.005
+		self.allowedIter = 100000
 
 		# Build input layer
 		for _ in range(0,self.net_info['in'][0]):
@@ -137,6 +139,10 @@ class FCCN: # fullyConnectedConvolutionnalNetwork
 		self.error = [0 for _ in range(0,self.net_info['out'][0])]
 		return
 
+	def setThresIterEta(self,thres=0.005,max_iter=100000,eta=0.001):
+		self.errorThreshold = thres
+		self.allowedIter = max_iter
+
 	def showNetworkDetails(self):
 		print('Global network info:')
 		print(self.net_info)
@@ -151,6 +157,7 @@ class FCCN: # fullyConnectedConvolutionnalNetwork
 			layer_size = len(self.neurons[l])
 			for n in range(0,layer_size):
 				print(str(self.neurons[l][n])+' '+str(n)+' '+str(self.neurons[l][n].functionType))
+		print(' ')
 		return
 
 	def getOutputFromLayer(self,layer,size):
@@ -224,7 +231,7 @@ class FCCN: # fullyConnectedConvolutionnalNetwork
 		error = 0
 		numOutNeurons = self.net_info['out'][0]
 		for i in range(0,numOutNeurons):
-			error += t_output[i] - self.neurons[self.net_info['HL']+1]
+			error += t_output[i] - self.neurons[self.net_info['HL']+1][i].output 
 		error /= numOutNeurons
 		return error
 
@@ -232,8 +239,10 @@ class FCCN: # fullyConnectedConvolutionnalNetwork
 		p = len(t_input)
 		error = 1000.0
 		counter = 0
+		iteration = 0
 
 		while(error > self.errorThreshold and iteration < self.allowedIter):
+			iteration += 1
 			for i in range(0,p):
 				self.forward(t_input[i])
 				self.calculateDeltas(t_output[i])
@@ -241,22 +250,34 @@ class FCCN: # fullyConnectedConvolutionnalNetwork
 				error = self.computeAverageError(t_output[i])
 			
 			counter += 1
-			if(counter >= 500):
-				print('Average error: ' + str(error))
+			if(counter >= 1000):
+				print('Average error: ' + str(error), end=' ')
+				print('at iteration ' + str(iteration) + '.')
 				counter = 0
+
+		if(error < self.errorThreshold):
+			print('The error is' +  'smaller than the tolerance. Learning is done.')
+			print('It took ' + str(iteration) + ' iterations.')
+			output = self.getOutputFromLayer(2,1)
+		if(iteration >= self.allowedIter):
+			print('The network did not converge fast enough. Process aborted.')
 		return
 
 
 def main():
 	# Specify network's dimensions and specifications
-	net_info={'InputDim':2,'HL':3,'in':[8,'sigmoid'],1:[10,'tanh'],2:[6,'relu'],3:[3,'tanh'],'out':[2,'linear']}
+	# net_info={'InputDim':2,'HL':3,'in':[8,'sigmoid'],1:[10,'tanh'],2:[6,'relu'],3:[3,'tanh'],'out':[2,'linear']}
+	# t_input = [[0.1,0.1],[0.2,0.1],[0.3,0.1],[0.4,0.1],[0.5,0.1],[0.6,0.1],[0.7,0.1],[0.8,0.1]]
+
+	# Network for interpolation from R1 -> R1 (1|2|1 layers)
+	net_info = {'InputDim':1,'HL':1,'in':[1,'tanh'],1:[2,'tanh'],'out':[1,'linear']}
 	
+	t_input,t_output = generateData()
+
 	nn = FCCN(net_info)
+	nn.setThresIterEta(thres=0.005,max_iter=100000,eta=0.001)
 	nn.showNetworkDetails()
-	t_input = [[0.1,0.1],[0.2,0.1],[0.3,0.1],[0.4,0.1],[0.5,0.1],[0.6,0.1],[0.7,0.1],[0.8,0.1]]
-	nn.forward(t_input)
-	nn.calculateDeltas([1,2])
-	nn.update_weights(t_input)
+	nn.train(t_input,t_output)
 
 if __name__ == "__main__":
     main()
