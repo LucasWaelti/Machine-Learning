@@ -39,7 +39,7 @@
 
 \newpage
 \section{Introduction}
-The following will try to provide an understanding of Convolution Neural Networks and of the mathematics behind this concept. The objective is to demystify the idea of artificial intelligence (also called Machine Learning) and to give a feeling to the reader of what is actually going on. 
+The following will try to provide an understanding of Convolution Neural Networks and of the mathematics behind this concept. The objective is to give a feeling of what is actually going on and of what is supervised learning.  
 \subsection{The concept of Neuron}
 The Neuron is the basic block of any Neural Network. A Neuron can receive any number of inputs $x_i$ and will apply a weight $w_i$ on each of these. The Net ($\sum_{i}{x_iw_i}$) is then created by adding those weighted inputs and is then evaluated by an activation function $f$ to produce an output $y$. 
 
@@ -179,5 +179,25 @@ Therefore the update step for any weight of the Neural Network is given by
 				= w_{ij}(t) + \eta \cdot \delta_j \cdot out_i 
 }
 \end{equation}
+
+\section{Some Good Practice}
+\subsection{Weights Initialisation}
+All weights should be very small non-zero values ($10^{-5} ~ 10^{-7}$). Typically for a sigmoid or tanh transfer function, the gradient will be computed where the slope is the potentially the greatest. 
+\subsection{Input and Output Normalisation}
+\begin{list}{•}{}
+\item Output: The output does not necessarily need normalization. Typically, a linear activation function at the output does not require any normalization. If the output range is known, a normalization might be possible (between 0 and 1 or -1 and 1 for instance) but it is not recommended. 
+\item Input: It is important to normalize the data (between 0 and 1 or -1 and 1 for instance, depending on the activation function chosen for the input layer). Furthermore, in case of multiple inputs, the data should be comparable. Being of the same unit is important but as well of having comparable range of values. Normalization can help with that. 
+\end{list}
+\subsection{Small Weight Updates}
+The learning rate $\eta$ should be kept within the range $[0.001, 0.00001]$ typically. A possible behaviour during the learning process would be to see the error diminish and suddenly rise again. The error then does not change any more after that and it seems the network cannot learn. This is due to the fact that during the gradient descent, the weights overshoot their target values and then keep swinging around it because of the learning rate that is not small enough to provide a sufficiently precise learning. 
+
+A solution to it is to decrease the value of the learning rate as a function of the number if iterations, which allows more and more precise gradient descent while not slowing down to much the learning process in the beginning. 
+\subsection{Problem of local Minima}
+The learning process can be blocked within a local minimum. The error stop reducing and does not tend to vary much anymore. The idea is to give a push to the network by adding a small random value to each of its weights to try and get it out of the minimum and hopefully allow it to keep learning. This process is called \textbf{Simulated Annealing} and is particularly of use in case of noisy data. 
+\subsection{Network's Size}
+There are no rule really on how to build a neural network. In order to choose how many layers and neurons should form the network, the following rule of thumb can be considered:
+The size of the first hidden layer can be 1.5 to 2 times bigger then the input layer and slowly converges to the size of the output. 
+\subsection{Over-fitting/Over-training}
+In this scenario, the network has perfectly learn each points of its training set but is no longer capable of correctly generalize. That is why, training data has to be separated into a training set (70\%) and a testing set (30\%). It means that if the error of the training data keeps getting smaller but that at the same time, the error on the testing set rises, it means the network is becoming over-trained. A technique called \textbf{Early Stopping} consists to go back to the state of the network before the error on the testing set started getting greater. 
 
 \end{document}
