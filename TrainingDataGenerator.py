@@ -1,17 +1,6 @@
 import math
 import numpy as np
-import matplotlib.pyplot as plt
 
-def realTimePlot():
-    plt.axis([0, 10, 0, 1])
-
-    for i in range(10):
-        y = np.random.random()
-        plt.scatter(i, y)
-        plt.pause(0.05)
-
-    plt.draw() #show()
-    return
 
 def store(data = [[0,0]]):
     size = len(data)
@@ -92,7 +81,7 @@ def generateData(inter = [0,1], n = 50):
         x += step
         y = function(x)
         data.append([x,y])
-        datax.append([[x]])
+        datax.append([[x]]) # Needs to be a list of lists because of multiple inputs possible for 1 neuron
         datay.append([y])
     store(data)
     return datax,datay
