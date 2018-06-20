@@ -143,6 +143,7 @@ class FCCN: # fullyConnectedConvolutionnalNeuralNetwork
 	def setThresIterEta(self,thres=0.005,max_iter=100000,eta=0.001):
 		self.errorThreshold = thres
 		self.allowedIter = max_iter
+		self.eta = eta
 
 	def showNetworkDetails(self):
 		print('Global network info:')
