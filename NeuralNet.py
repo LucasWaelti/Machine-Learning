@@ -1,8 +1,9 @@
 import numpy as np
 import math
-import matplotlib.pyplot as plt
 
 from TrainingDataGenerator import *
+
+global ERROR
 
 class Neuron:
 	def __init__(self,func='tanh',num_weights=0):
@@ -115,7 +116,7 @@ class FCCN: # fullyConnectedConvolutionnalNeuralNetwork
 		# If neural net has hidden layers, build them
 		if(self.net_info['HL'] > 0): 
 			for h in range(1,self.net_info['HL']+1):
-				self.neurons.append([]) # Append new layer
+				self.neurons.append([]) # Append new empty layer
 				for _ in range(0,self.net_info[h][0]):
 					# Add neurons to layer h
 					if(h == 1):
@@ -236,6 +237,8 @@ class FCCN: # fullyConnectedConvolutionnalNeuralNetwork
 		return error
 
 	def train(self, t_input, t_output):
+		global ERROR
+
 		p = len(t_input)
 		error = 1000.0
 		counter = 0
@@ -248,6 +251,7 @@ class FCCN: # fullyConnectedConvolutionnalNeuralNetwork
 				self.calculateDeltas(t_output[i])
 				self.update_weights(t_input[i])
 				error = self.computeAverageError(t_output[i])
+				ERROR = error 
 			
 			counter += 1
 			if(counter >= 1000):
